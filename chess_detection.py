@@ -91,7 +91,6 @@ def create_cnn_model(input_shape, num_classes):
     x = Dropout(0.7)(x)  
     x = Dense(256, activation='relu')(x)  
     x = Dropout(0.5)(x)  
-    x = BatchNormalization()(x)  
     x = Dense(128, activation='relu')(x) 
     x = Dropout(0.5)(x) 
     x = Dense(64, activation='relu')(x) 
