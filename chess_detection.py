@@ -168,5 +168,50 @@ if __name__ == "__main__":
     plt.savefig("train_validation_history.png")
     plt.show()
 
-    # Save the model
-    cnn_model.save("cnn_model.h5")
+    # Clear the current figure
+    plt.clf()
+
+    # # save the model
+    # cnn_model.save("cnn_model.h5")
+
+    # load saved model
+    loaded_model = load_model("cnn_model.h5")
+
+    # predict labels for the test set using the loaded CNN model
+    cnn_y_pred = loaded_model.predict(X_test)
+    cnn_y_pred_classes = np.argmax(cnn_y_pred, axis=1)
+
+    # generate confusion matrix for CNN
+    cnn_conf_matrix = confusion_matrix(y_test, cnn_y_pred_classes)
+
+    # plot confusion matrix using seaborn
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cnn_conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=labels, yticklabels=labels)
+    plt.title("Confusion Matrix - CNN")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.savefig("confusion_matrix_cnn.png") 
+    plt.show()
+
+    # create directory for the predicted images
+    predicted_images_dir = "predicted_images"
+    os.makedirs(predicted_images_dir, exist_ok=True)
+
+    # predict image class labels with cnn
+    for i in range(10):
+        # select random index from test set
+        index = np.random.randint(0, len(X_test))
+
+        # get corresponding image and label
+        image = X_test[index]
+        true_label = y_test[index]
+
+        # predict label using CNN
+        predicted_label = np.argmax(loaded_model.predict(np.expand_dims(image, axis=0)))
+
+        # save images
+        plt.imshow(image)
+        plt.title(f"True Label: {labels[true_label]}, Predicted Label: {labels[predicted_label]}")
+        plt.axis('off')  # Remove tick marks and numbers
+        plt.savefig(os.path.join(predicted_images_dir, f"predicted_image_{i}.png"))
+        plt.show()
