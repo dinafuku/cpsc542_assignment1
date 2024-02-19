@@ -1,3 +1,4 @@
+# import needed libraries
 import os
 import numpy as np
 from PIL import Image
@@ -16,6 +17,7 @@ from keras.models import load_model
 
 # gathering data, preprocessing, data augmentation
 def preprocess_data(folder_path):
+    # datagenerator that conducts data augmentation and preprocessing steps for the images
     image_datagen = ImageDataGenerator(
         rescale=1./255,
         rotation_range=20,
@@ -52,18 +54,21 @@ def preprocess_data(folder_path):
 
 def split_data(X, y):
     # split data 80/20 (for train and test sets)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=542)
     
     # creat validation data by further splitting training data (80/20)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.20, random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.20, random_state=542)
     
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 # simple random forest model
 def train_random_forest(X_train, X_test, y_train, y_test):
-    rf_classifier = RandomForestClassifier(n_estimators=10, random_state=42)
+    # define random forest model with a low amount of decision trees due to signifcant overfitting
+    rf_classifier = RandomForestClassifier(n_estimators=10, random_state=542)
+    # reshape training data since we need to convert image shape and flatten
     rf_classifier.fit(X_train.reshape(len(X_train), -1), y_train)
     
+    # output training and test accuracy of the model
     train_accuracy = rf_classifier.score(X_train.reshape(len(X_train), -1), y_train)
     test_accuracy = rf_classifier.score(X_test.reshape(len(X_test), -1), y_test)
     
@@ -82,8 +87,8 @@ def create_cnn_model(input_shape, num_classes):
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
     x = Dense(512, activation='relu')(x)
+    # dropout for regulurization
     x = Dropout(0.7)(x)  
-    x = BatchNormalization()(x)  
     x = Dense(256, activation='relu')(x)  
     x = Dropout(0.5)(x)  
     x = BatchNormalization()(x)  
@@ -91,38 +96,45 @@ def create_cnn_model(input_shape, num_classes):
     x = Dropout(0.5)(x) 
     x = Dense(64, activation='relu')(x) 
     x = Dropout(0.5)(x) 
+    # batch norm also for normalization
     x = BatchNormalization()(x) 
+    # use soft max since we are predicted between 5 classes not just 2
     predictions = Dense(num_classes, activation='softmax')(x)
 
     # create model given the specificed base model inputs and predictions
     model = Model(inputs=base_model.input, outputs=predictions)
 
-    # define learning rate for better convergence
+    # define learning rate for better convergence (prevent large skips over minima)
     learning_rate = 0.001
 
-    # compile
+    # compile using specified learning rate and track accuracy
     model.compile(optimizer=Adam(learning_rate=learning_rate), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     return model
 
 # main
 if __name__ == "__main__":
+    # provide data folder path
     folder_path = "images"  
     X, y = preprocess_data(folder_path)
 
+    # split data into train, test, validation
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(X, y)
 
     # train simple rf model
     rf_model, train_accuracy, test_accuracy = train_random_forest(X_train, X_test, y_train, y_test)
 
+    # reshape training data for rf model
     rf_y_pred = rf_model.predict(X_test.reshape(len(X_test), -1))
+    # compute confusion matrix for rf model
     conf_matrix = confusion_matrix(y_test, rf_y_pred)
 
+    # print out confusion matrix for rf model
     print("Random Forest Train Accuracy:", train_accuracy)
     print("Random Forest Test Accuracy:", test_accuracy)
     print(conf_matrix)
 
-    # plot confusion matrix using seaborn
+    # plot confusion matrix using seaborn for easier visability
     labels = ['pawn', 'bishop', 'knight', 'rook', 'queen']
     plt.figure(figsize=(8, 6))
     sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=labels, yticklabels=labels)
@@ -146,6 +158,7 @@ if __name__ == "__main__":
     val_loss, val_accuracy = cnn_model.evaluate(X_val, y_val)
     test_loss, test_accuracy = cnn_model.evaluate(X_test, y_test)
 
+    # print out those metrics
     print("CNN Train Accuracy:", train_accuracy)
     print("CNN Validation Accuracy:", val_accuracy)
     print("CNN Test Accuracy:", test_accuracy)
@@ -155,10 +168,10 @@ if __name__ == "__main__":
     val_accuracy = history.history['val_accuracy']
     epochs = range(1, len(train_accuracy) + 1)
 
-    # Clear the current figure
+    # clear the current figure
     plt.clf()
 
-    # Plot train and validation accuracy over epochs
+    # plot train and validation accuracy over epochs
     plt.plot(epochs, train_accuracy, 'b', label='Training Accuracy')
     plt.plot(epochs, val_accuracy, 'r', label='Validation Accuracy')
     plt.title('Training and Validation Accuracy')
@@ -168,7 +181,7 @@ if __name__ == "__main__":
     plt.savefig("train_validation_history.png")
     plt.show()
 
-    # Clear the current figure
+    # clear the current figure
     plt.clf()
 
     # # save the model

@@ -1,5 +1,6 @@
 confusion_matrix*
 cnn_model.h5
 train_validation_history.png
-out.txt
+*.txt
 predicted_images
+eda_images
