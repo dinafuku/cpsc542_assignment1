@@ -183,8 +183,8 @@ if __name__ == "__main__":
     # clear the current figure
     plt.clf()
 
-    # # save the model
-    # cnn_model.save("cnn_model.h5")
+    # save the model
+    cnn_model.save("cnn_model.h5")
 
     # load saved model
     loaded_model = load_model("cnn_model.h5")
@@ -204,6 +204,8 @@ if __name__ == "__main__":
     plt.ylabel("True")
     plt.savefig("confusion_matrix_cnn.png") 
     plt.show()
+
+    plt.clf()
 
     # create directory for the predicted images
     predicted_images_dir = "predicted_images"
@@ -227,3 +229,4 @@ if __name__ == "__main__":
         plt.axis('off')  # Remove tick marks and numbers
         plt.savefig(os.path.join(predicted_images_dir, f"predicted_image_{i}.png"))
         plt.show()
+        plt.clf()
