@@ -56,7 +56,7 @@ def split_data(X, y):
     # split data 80/20 (for train and test sets)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=542)
     
-    # creat validation data by further splitting training data (80/20)
+    # create validation data by further splitting training data (80/20)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.20, random_state=542)
     
     return X_train, X_val, X_test, y_train, y_val, y_test
