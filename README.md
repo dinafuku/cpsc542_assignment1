@@ -1,4 +1,4 @@
-# Student Info
+# Assignment Info
 Student Name: Dylan Inafuku
 
 Student ID: 2375529
